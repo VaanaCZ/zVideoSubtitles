@@ -27,6 +27,22 @@ The plugin will not load any subtitles if the `subTitles` option is turned off i
 
 ## Screenshots
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2737d8a1-a666-4590-a407-3aaaccf765de" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fc96eb21-07d2-4eac-a9b7-070d9943cf45" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9be5aab8-b8cd-46ac-9838-93d8c44cc490" />
+<table>
+  <tr>
+    <td width="50%">
+      <img width="100%" alt="The Chronicles of Myrtana: Archolos" src="https://github.com/user-attachments/assets/2737d8a1-a666-4590-a407-3aaaccf765de" />
+    </td>
+    <td width="50%">
+	  <img width="100%" alt="Gothic II: Gold" src="https://github.com/user-attachments/assets/63d45459-826c-44a0-9602-833567ecde0c" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img width="100%" alt="Gothic Sequel" src="https://github.com/user-attachments/assets/1f0da659-5ad3-4325-9a6a-a0cf848bf407" />
+    </td>
+    <td width="50%">
+      <img width="100%" alt="Gothic" src="https://github.com/user-attachments/assets/fb1c2892-e0ac-4082-bd37-0e9801dd7b82" />
+    </td>
+  </tr>
+</table>
+
