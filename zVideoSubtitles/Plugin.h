@@ -9,7 +9,6 @@ namespace GOTHIC_ENGINE {
 
     zCSubtitlePlayer    subtitlePlayer;
     oCBinkPlayer*       videoPlayer     = nullptr;
-    bool                isDx11          = false;
 
     struct BINK
     {
@@ -56,10 +55,10 @@ namespace GOTHIC_ENGINE {
         {
             BINK* bink = (BINK*)videoPlayer->mVideoHandle;
 
-            if (isDx11)
+            // Workaround for GD3D11 and Legacy Alt Renderer because
+            // everything ever made for Gothic fucking sucks!
+            if (bink->Width > 0xFFFF) // 64k is reserved by Windows
             {
-                // Workaround for GD3D11 because everything ever
-                // made for Gothic fucking sucks!
                 bink = *(BINK**)videoPlayer->mVideoHandle;
             }
 

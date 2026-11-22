@@ -8,18 +8,8 @@ namespace GOTHIC_ENGINE {
   // Your code ...
 
   void Game_Entry() {
-    HMODULE ddraw = LoadLibrary(TEXT("ddraw.dll"));
-    if (!ddraw)
-        return;
-
-    // kurwa jaki syzyf, dzien w dzien to samo
-    // kurwa, bez jebanych rezultatow, nic tylko
-    // sie zajebac, no bo chuj z takim zyciem.
-    isDx11 = (GetProcAddress(ddraw, "GDX_AddPointLocator") != NULL);
-
-    FreeLibrary(ddraw);
   }
-  
+
   void Game_Init() {
   }
 
