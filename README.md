@@ -3,7 +3,7 @@
 A plugin which allows the playback of `.srt` files from the `_Work/Data/Video/` directory. Originally developed for Archolos 2.0, open-sourced for public use.
 
 - Places a dialogue box underneath the text.
-- Works with GD3D11 (DX11 mod) as well as without it.
+- Works with GD3D11 (DX11 mod) and LegacyAltRenderer as well as vanilla.
 - Works correctly when video is paused.
 
 If the `Subtitles` game setting is turned off, the video subtitles will also be turned off.
