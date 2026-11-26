@@ -43,7 +43,13 @@ Since the plugin uses the ingame font for text rendering, `.srt` files must be e
 
 It is also possible to retrieve text values from the scripts by specifying a name of the script symbol or output unit and prefixing it with the $ character.
 
-For example:
-`Test1 $DIALOG_ENDE, test2 $SVM_15_SC_HeyTurnAround`
-will be resolved as:
-`Test1 END, test2 Hey, you!`
+SRT example:
+```srt
+1
+00:00:14,886 --> 00:00:18,457
+Test1 $DIALOG_ENDE, test2 $SVM_15_SC_HeyTurnAround
+```
+In-game output:
+```text
+Test1 END, test2 Hey, you!
+```
