@@ -4,11 +4,11 @@ A plugin which allows the playback of `.srt` files from the `_Work/Data/Video/` 
 
 - Places a dialogue box underneath the text.
 - Works with GD3D11 (DX11 mod) and LegacyAltRenderer as well as vanilla.
+- Supports multi-line subtitles.
+- Allows to query text from the scripts or output units (using $ symbol).
 - Works correctly when video is paused.
 
 If the `Subtitles` game setting is turned off, the video subtitles will also be turned off.
-
-Multi-line subtitles are not currently supported.
 
 ## Showcase
 
@@ -38,3 +38,12 @@ Since the plugin uses the ingame font for text rendering, `.srt` files must be e
 - `cp1252` for English, German, Spanish, Italian, French
 
 `.srt` files can be both packed (in `.vdf` volumes) or unpacked.
+
+## Referencing the scripts
+
+It is also possible to retrieve text values from the scripts by specifying a name of the script symbol or output unit and prefixing it with the $ character.
+
+For example:
+`Test1 $DIALOG_ENDE, test2 $SVM_15_SC_HeyTurnAround`
+will be resolved as:
+`Test1 END, test2 Hey, you!`

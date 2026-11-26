@@ -19,12 +19,14 @@ private:
 
 	struct SubtitleItem
 	{
-		unsigned int startTime; // ms
-		unsigned int endTime; // ms
-		zSTRING text;
+		unsigned int startTime;	// ms
+		unsigned int endTime;	// ms
+		unsigned int lineIndex;
+		unsigned int lineCount;
 	};
 
 	zCArray<SubtitleItem>	m_items;
+	zCArray<zSTRING>		m_lines;
 	zCView*					m_view;
 
 };

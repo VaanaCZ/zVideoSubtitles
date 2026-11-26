@@ -26,6 +26,76 @@ unsigned int StringToTimeMS(const zSTRING& str)
 	return hours * 3600000 + mins * 60000 + seconds * 1000 + milliseconds;
 }
 
+void ParseLine(zSTRING& str)
+{
+	int start = 0;
+	while ((start = str.Search("$", start, false)) != -1)
+	{
+		// Get name of symbol
+		int nameStart = start + 1;
+		int end = nameStart;
+
+		while (end < str.Length())
+		{
+			unsigned char c = str[(unsigned int)end];
+			
+			if (!isalnum(c) && c != '_')
+				break;
+
+			end++;
+		}
+
+		if (nameStart == end)
+		{
+			start = end;
+			continue;
+		}
+
+		zSTRING symName = ((const zSTRING&)str).Copy(nameStart, end - nameStart);
+
+		// Try to resolve symbol value
+		zSTRING symValue;
+
+		zCPar_Symbol* sym = parser->GetSymbol(symName);
+		if (sym && sym->type == zPAR_TYPE_STRING)
+		{
+			// From scripts
+			symValue = sym->stringdata[0];
+		}
+		else
+		{
+			// From output units
+			int num = ogame->GetCutsceneManager()->LibValidateOU(symName);
+			if (num != -1)
+			{
+				zCCSBlock* block = ogame->GetCutsceneManager()->LibGet(num);
+				zCCSAtomicBlock* aBlock = dynamic_cast<zCCSAtomicBlock*>(block->GetChild(0));
+
+				if (aBlock)
+				{
+					oCMsgConversation* msg = dynamic_cast<oCMsgConversation*>(aBlock->GetCommand());
+					if (msg)
+					{
+						symValue = msg->text;
+					}
+				}
+			}
+		}
+
+		// Replace or leave as is
+		if (!symValue.IsEmpty())
+		{
+			str.Cut(start, end - start);
+			str.Put(symValue, start);
+			start += symValue.Length();
+		}
+		else
+		{
+			start = end;
+		}
+	}
+}
+
 zCSubtitlePlayer::~zCSubtitlePlayer()
 {
 	if (m_view) zDELETE(m_view);
@@ -34,6 +104,7 @@ zCSubtitlePlayer::~zCSubtitlePlayer()
 void zCSubtitlePlayer::ParseSubtitles(const zSTRING& filename)
 {
 	m_items.EmptyList();
+	m_lines.EmptyList();
 
 	zBOOL enableSubtitles = zoptions->ReadInt("GAME", "subTitles", 1);
 	if (!enableSubtitles)
@@ -63,40 +134,56 @@ void zCSubtitlePlayer::ParseSubtitles(const zSTRING& filename)
 	unsigned int startTime = 0;
 	unsigned int endTime = 0;
 
+	SubtitleItem* item = nullptr;
 	zSTRING	line = "";
 	while (!file->Eof())
 	{
 		file->Read(line);
 
-		if (!line.IsEmpty())
+		if (line.IsEmpty())
 		{
-			int separator = line.Search("-->", 0, false);
-			if (separator != -1)
+			item = nullptr;
+			continue;
+		}
+
+		int separator = line.Search("-->", 0, false);
+		if (separator != -1)
+		{
+			item = nullptr;
+
+			// Have to do it like this because Union strings are stupid
+			zSTRING startTimeStr = line; startTimeStr.Cut(separator, 256);
+			zSTRING endTimeStr = line; endTimeStr.Cut(separator + 3);
+
+			startTime	= StringToTimeMS(startTimeStr);
+			endTime		= StringToTimeMS(endTimeStr);
+
+			if (endTime > startTime)
 			{
-				// Have to do it like this because Union strings are stupid
-				zSTRING startTimeStr = line; startTimeStr.Cut(separator, 256);
-				zSTRING endTimeStr = line; endTimeStr.Cut(separator + 3);
+				m_items.Insert(SubtitleItem());
+				item = &m_items[m_items.GetNum() - 1];
 
-				startTime = StringToTimeMS(startTimeStr);
-				endTime = StringToTimeMS(endTimeStr);
+				item->startTime	= startTime;
+				item->endTime	= endTime;
+				item->lineIndex	= m_lines.GetNum();
+				item->lineCount	= 0;
 			}
-			else
-			{
-				if (endTime <= startTime)
-					continue;
+		}
+		else
+		{
+			if (!item) continue;
 
-				SubtitleItem item;
-				item.startTime	= startTime;
-				item.endTime	= endTime;
-				item.text		= line;
-				m_items.Insert(item);
+			ParseLine(line);
 
-				startTime = 0;
-				endTime = 0;
-			}
+			m_lines.Insert(line);
+			item->lineCount++;
+
+			startTime	= 0;
+			endTime		= 0;
 		}
 	}
 
+	file->Close();
 	delete file;
 }
 
@@ -112,21 +199,41 @@ void zCSubtitlePlayer::RenderSubtitles(unsigned int time)
 
 			// Set up box
 			int screenFontY = screen->any(fontY);
-			int ySize = screenFontY * 4;
-			int yPos = SUBTITLE_OFFSET_Y - (ySize / 2);
 
-			int xSize = screen->FontSize(item.text) + (screenFontY * 2);
+			int maxLineWidth = 0;
+			for (int i = 0; i < item.lineCount; i++)
+			{
+				int lineIdx = item.lineIndex + i;
+				int lineWidth = screen->FontSize(m_lines[lineIdx]);
+				if (lineWidth > maxLineWidth)
+					maxLineWidth = lineWidth;
+			}
+
+			int maxLineCount = 3;
+			if (item.lineCount > maxLineCount)
+				maxLineCount = item.lineCount;
+
+			int xSize = maxLineWidth + (screenFontY * 2);
+			int ySize = screenFontY * (maxLineCount + 1);
 			int xPos = (VIEW_VXMAX - xSize) / 2;
+			int yPos = SUBTITLE_OFFSET_Y - (ySize / 2);
 
 			m_view->SetPos(xPos, yPos);
 			m_view->SetSize(xSize, ySize);
 
 			// Print text
 			int viewFontY = m_view->any(fontY);
-			int printY = (VIEW_VYMAX - viewFontY) / 2;
-			m_view->PrintCX(printY, item.text);
+			int startPrintY = (VIEW_VYMAX - (item.lineCount * viewFontY)) / 2;
+
+			for (int i = 0; i < item.lineCount; i++)
+			{
+				int lineIdx = item.lineIndex + i;
+				m_view->PrintCX(startPrintY + (i * viewFontY), m_lines[lineIdx]);
+			}
+
 			m_view->Blit();
 			m_view->ClrPrintwin();
+			break;
 		}
 	}
 }
